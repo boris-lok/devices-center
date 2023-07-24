@@ -1,9 +1,25 @@
 <script lang="ts">
   import InputBox from "../components/InputBox.svelte";
+  import { servicesClient } from "../services/service";
 
   let errorMsg: string | null = null;
   let username = "";
   let password = "";
+
+  async function submitHandler() {
+    const resp = await servicesClient.path("/api/v1/login").post({
+      body: {
+        username: username,
+        password: password,
+      },
+    });
+  }
+
+  const onUserChanged = (e: InputEvent) =>
+    (username = (e.target as HTMLInputElement).value);
+
+  const onPasswordChanged = (e: InputEvent) =>
+    (password = (e.target as HTMLInputElement).value);
 </script>
 
 <main>
@@ -12,16 +28,22 @@
       {#if errorMsg !== null}
         <div class="error">{errorMsg}</div>
       {/if}
-      <InputBox hasError={errorMsg !== null} label="Username" name="username" />
+      <InputBox
+        hasError={errorMsg !== null}
+        label="Username"
+        name="username"
+        on:input={onUserChanged}
+      />
       <InputBox
         hasError={errorMsg !== null}
         label="Password"
         name="password"
         type="text"
+        on:input={onPasswordChanged}
       />
 
       <div class="btn-container">
-        <button>Login</button>
+        <button on:click={submitHandler}>Login</button>
       </div>
     </div>
   </div>

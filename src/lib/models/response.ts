@@ -17,6 +17,13 @@ export interface IErrorResponse extends IResponse {
   };
 }
 
+export interface IUnknowErrorResponse extends IResponse {
+  status: string;
+  body: {
+    message: string;
+  };
+}
+
 /**
  * The interface of a login response
  */
