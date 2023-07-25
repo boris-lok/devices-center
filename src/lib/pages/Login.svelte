@@ -1,18 +1,52 @@
 <script lang="ts">
   import InputBox from "../components/InputBox.svelte";
   import { servicesClient } from "../services/service";
+  import { userStore } from "../stores/user_store";
+  import { navigate } from "svelte-routing";
+
+  $: if ($userStore) {
+    navigate("/dashboard", { replace: true });
+  }
 
   let errorMsg: string | null = null;
   let username = "";
   let password = "";
 
+  async function onKeyPress(e: KeyboardEvent) {
+    const keyCode = e.code || e.key;
+    if (keyCode == "Enter") {
+      await login();
+    }
+  }
+
   async function submitHandler() {
-    const resp = await servicesClient.path("/api/v1/login").post({
-      body: {
-        username: username,
-        password: password,
-      },
-    });
+    await login();
+  }
+
+  async function login() {
+    function validate() {
+      return username !== "" && password != "";
+    }
+
+    if (validate()) {
+      errorMsg = null;
+      const resp = await servicesClient.path("/api/v1/login").post({
+        body: {
+          username: username,
+          password: password,
+        },
+      });
+
+      if (resp.status == "200") {
+        userStore.set(
+          JSON.stringify({ username: username, token: resp.body.token })
+        );
+
+        navigate("/dashboard", { replace: true });
+      } else {
+        errorMsg = resp.body.message;
+      }
+    }
   }
 
   const onUserChanged = (e: InputEvent) =>
@@ -33,6 +67,7 @@
         label="Username"
         name="username"
         on:input={onUserChanged}
+        on:keypress={onKeyPress}
       />
       <InputBox
         hasError={errorMsg !== null}
@@ -40,6 +75,7 @@
         name="password"
         type="text"
         on:input={onPasswordChanged}
+        on:keypress={onKeyPress}
       />
 
       <div class="btn-container">

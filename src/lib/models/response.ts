@@ -11,14 +11,7 @@ export interface IResponse {
  * The interface of an error response
  */
 export interface IErrorResponse extends IResponse {
-  status: '400' | '404' | '500';
-  body: {
-    message: string;
-  };
-}
-
-export interface IUnknowErrorResponse extends IResponse {
-  status: string;
+  status: '400' | '404' | '500' | '401';
   body: {
     message: string;
   };

@@ -1,18 +1,12 @@
 import axios from 'axios';
 import { type ILoginOptions } from '../models/requestOptions';
-import {
-  type IErrorResponse,
-  type ILoginResponse,
-  type IUnknowErrorResponse,
-} from '../models/response';
+import { type IErrorResponse, type ILoginResponse } from '../models/response';
 
 const TIMEOUT = 10 * 1000;
 
 interface ServicesLib {
   '/api/v1/login': {
-    post: (
-      input: ILoginOptions
-    ) => Promise<ILoginResponse | IErrorResponse | IUnknowErrorResponse>;
+    post: (input: ILoginOptions) => Promise<ILoginResponse | IErrorResponse>;
   };
   /*
   'v1/device/{deviceId}': {
@@ -38,13 +32,18 @@ type Path = <TPath extends keyof ServicesLib>(
 
 async function errorWrapper<T>(
   f: () => Promise<T>
-): Promise<T | IErrorResponse | IUnknowErrorResponse> {
+): Promise<T | IErrorResponse> {
   try {
     return await f();
   } catch (e: unknown) {
     if (axios.isAxiosError(e)) {
-      if (e.status == 400 || e.status == 404 || e.status == 500) {
-        const s = `${e.status!}` as const;
+      if (
+        e.response.status == 400 ||
+        e.response.status == 404 ||
+        e.response.status == 500 ||
+        e.response.status == 401
+      ) {
+        const s = `${e.response.status}` as const;
         const resp: IErrorResponse = {
           status: s,
           body: {
@@ -53,13 +52,7 @@ async function errorWrapper<T>(
         };
         return resp;
       } else {
-        const resp: IUnknowErrorResponse = {
-          status: e.code,
-          body: {
-            message: e.message,
-          },
-        };
-        return resp;
+        console.error(`unknown error: ${JSON.stringify(e)}`);
       }
     } else {
       console.error(
@@ -77,7 +70,7 @@ export function BuildClient(url: string): { path: Path } {
       '/api/v1/login': {
         post: async function (
           input: ILoginOptions
-        ): Promise<ILoginResponse | IErrorResponse | IUnknowErrorResponse> {
+        ): Promise<ILoginResponse | IErrorResponse> {
           const innerFunction = async () => {
             const data = JSON.stringify(input.body);
             return await axios
@@ -89,13 +82,19 @@ export function BuildClient(url: string): { path: Path } {
                   'Content-Type': 'application/json',
                 },
               })
-              .post<ILoginResponse>(path, data)
-              .then((resp) => resp.data);
+              .post<{ token: string }>(path, data)
+              .then((data) => {
+                const resp: ILoginResponse = {
+                  status: '200',
+                  body: {
+                    token: data.data.token,
+                  },
+                };
+                return resp;
+              });
           };
 
-          const resp = await errorWrapper(innerFunction);
-          console.log(`resp: ${JSON.stringify(resp)}`);
-          return resp;
+          return await errorWrapper(innerFunction);
         },
       },
     };
