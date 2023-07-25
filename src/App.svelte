@@ -4,6 +4,7 @@
   import { userStore } from "./lib/stores/user_store";
   import Dashboard from "./lib/pages/Dashboard.svelte";
   import PrivateRoute from "./lib/components/PrivateRoute.svelte";
+  import AdminLayout from "./lib/components/AdminLayout.svelte";
 
   userStore.useLocalStorage();
 </script>
@@ -15,7 +16,9 @@
     </Route>
 
     <PrivateRoute path="dashboard">
-      <Dashboard />
+      <AdminLayout>
+        <Dashboard />
+      </AdminLayout>
     </PrivateRoute>
   </Router>
 </main>
