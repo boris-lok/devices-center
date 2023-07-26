@@ -1,6 +1,13 @@
 import axios from 'axios';
-import { type ILoginOptions } from '../models/requestOptions';
-import { type IErrorResponse, type ILoginResponse } from '../models/response';
+import {
+  type IGetDevicesOptions,
+  type ILoginOptions,
+} from '../models/requestOptions';
+import {
+  type IErrorResponse,
+  type ILoginResponse,
+  type IGetDevicesResponse,
+} from '../models/response';
 
 const TIMEOUT = 10 * 1000;
 
@@ -8,11 +15,11 @@ interface ServicesLib {
   '/api/v1/login': {
     post: (input: ILoginOptions) => Promise<ILoginResponse | IErrorResponse>;
   };
-  /*
-  'v1/device/{deviceId}': {
-    get: () => void;
+  '/api/v1/devices': {
+    get: (
+      input: IGetDevicesOptions
+    ) => Promise<IGetDevicesResponse | IErrorResponse>;
   };
-  */
 }
 
 type TPathParameter<TPath extends string> =
@@ -95,6 +102,37 @@ export function BuildClient(url: string): { path: Path } {
           };
 
           return await errorWrapper(innerFunction);
+        },
+      },
+      '/api/v1/devices': {
+        get: function (
+          input: IGetDevicesOptions
+        ): Promise<IErrorResponse | IGetDevicesResponse> {
+          if (!input.body.query) {
+            const resp: IGetDevicesResponse = {
+              status: '200',
+              body: {
+                devices: [
+                  { id: '1', name: '1' },
+                  { id: '2', name: '2' },
+                ],
+              },
+            };
+
+            return Promise.resolve(resp);
+          }
+
+          const resp: IGetDevicesResponse = {
+            status: '200',
+            body: {
+              devices: [
+                { id: '1', name: `1. ${input.body.query}` },
+                { id: '2', name: `2. ${input.body.query}` },
+              ],
+            },
+          };
+
+          return Promise.resolve(resp);
         },
       },
     };

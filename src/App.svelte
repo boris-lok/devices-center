@@ -6,6 +6,7 @@
   import PrivateRoute from "./lib/components/PrivateRoute.svelte";
   import AdminLayout from "./lib/components/AdminLayout.svelte";
   import Logout from "./lib/pages/Logout.svelte";
+    import AutoCompletionInputBox from "./lib/components/AutoCompletionInputBox.svelte";
 
   userStore.useLocalStorage();
 </script>
@@ -18,6 +19,10 @@
 
     <Route path="/logout">
       <Logout />
+    </Route>
+
+    <Route path="/auto">
+      <AutoCompletionInputBox />
     </Route>
 
     <PrivateRoute path="/dashboard">

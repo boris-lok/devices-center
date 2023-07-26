@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";login
+  import { onMount } from "svelte";
+  login;
   import InputBox from "../components/InputBox.svelte";
   import { servicesClient } from "../services/service";
   import { userStore } from "../stores/user_store";

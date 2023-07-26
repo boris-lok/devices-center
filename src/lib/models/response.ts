@@ -26,3 +26,16 @@ export interface ILoginResponse extends IResponse {
     token: string;
   };
 }
+
+/**
+ * The interface of a get devices response
+ */
+export interface IGetDevicesResponse extends IResponse {
+  status: '200';
+  body: {
+    devices: {
+      id: string;
+      name: string;
+    }[];
+  };
+}
