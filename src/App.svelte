@@ -5,6 +5,7 @@
   import Dashboard from "./lib/pages/Dashboard.svelte";
   import PrivateRoute from "./lib/components/PrivateRoute.svelte";
   import AdminLayout from "./lib/components/AdminLayout.svelte";
+  import Logout from "./lib/pages/Logout.svelte";
 
   userStore.useLocalStorage();
 </script>
@@ -15,7 +16,11 @@
       <Login />
     </Route>
 
-    <PrivateRoute path="dashboard">
+    <Route path="/logout">
+      <Logout />
+    </Route>
+
+    <PrivateRoute path="/dashboard">
       <AdminLayout>
         <Dashboard />
       </AdminLayout>

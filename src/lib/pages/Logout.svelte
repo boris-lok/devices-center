@@ -5,6 +5,6 @@
 
   onMount(() => {
     userStore.remove();
-    navigate("login", { replace: true });
+    navigate("/login", { replace: true });
   });
 </script>

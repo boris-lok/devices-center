@@ -1,12 +1,9 @@
 <script lang="ts">
+  import { onMount } from "svelte";login
   import InputBox from "../components/InputBox.svelte";
   import { servicesClient } from "../services/service";
   import { userStore } from "../stores/user_store";
   import { navigate } from "svelte-routing";
-
-  $: if ($userStore) {
-    navigate("/dashboard", { replace: true });
-  }
 
   let errorMsg: string | null = null;
   let username = "";
@@ -54,36 +51,45 @@
 
   const onPasswordChanged = (e: InputEvent) =>
     (password = (e.target as HTMLInputElement).value);
+
+  const isLoggedIn = $userStore;
+  onMount(() => {
+    if (isLoggedIn) {
+      navigate("/dashboard", { replace: true });
+    }
+  });
 </script>
 
-<main>
-  <div class="login-wrapper">
-    <div class="login-container">
-      {#if errorMsg !== null}
-        <div class="error">{errorMsg}</div>
-      {/if}
-      <InputBox
-        hasError={errorMsg !== null}
-        label="Username"
-        name="username"
-        on:input={onUserChanged}
-        on:keypress={onKeyPress}
-      />
-      <InputBox
-        hasError={errorMsg !== null}
-        label="Password"
-        name="password"
-        type="text"
-        on:input={onPasswordChanged}
-        on:keypress={onKeyPress}
-      />
+{#if !isLoggedIn}
+  <main>
+    <div class="login-wrapper">
+      <div class="login-container">
+        {#if errorMsg !== null}
+          <div class="error">{errorMsg}</div>
+        {/if}
+        <InputBox
+          hasError={errorMsg !== null}
+          label="Username"
+          name="username"
+          on:input={onUserChanged}
+          on:keypress={onKeyPress}
+        />
+        <InputBox
+          hasError={errorMsg !== null}
+          label="Password"
+          name="password"
+          type="password"
+          on:input={onPasswordChanged}
+          on:keypress={onKeyPress}
+        />
 
-      <div class="btn-container">
-        <button on:click={submitHandler}>Login</button>
+        <div class="btn-container">
+          <button on:click={submitHandler}>Login</button>
+        </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
+{/if}
 
 <style lang="scss">
   @import "src/assets/constants";
