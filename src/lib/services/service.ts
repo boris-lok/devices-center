@@ -71,68 +71,80 @@ async function errorWrapper<T>(
   }
 }
 
+async function login<TPath extends keyof ServicesLib>(
+  url: string,
+  path: TPath,
+  input: ILoginOptions
+): Promise<ILoginResponse | IErrorResponse> {
+  const innerFunction = async () => {
+    const data = JSON.stringify(input.body);
+    return await axios
+      .create({
+        baseURL: url,
+        timeout: TIMEOUT,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+      })
+      .post<{ token: string }>(path, data)
+      .then((data) => {
+        const resp: ILoginResponse = {
+          status: '200',
+          body: {
+            token: data.data.token,
+          },
+        };
+        return resp;
+      });
+  };
+
+  return await errorWrapper(innerFunction);
+}
+
+async function list_devices<TPath extends keyof ServicesLib>(
+  url: string,
+  path: TPath,
+  input: IGetDevicesOptions
+): Promise<IGetDevicesResponse | IErrorResponse> {
+  if (!input.body.query) {
+    const resp: IGetDevicesResponse = {
+      status: '200',
+      body: {
+        devices: [
+          { id: '1', name: '1' },
+          { id: '2', name: '2' },
+        ],
+      },
+    };
+
+    return Promise.resolve(resp);
+  }
+
+  const resp: IGetDevicesResponse = {
+    status: '200',
+    body: {
+      devices: [
+        { id: '1', name: `1. ${input.body.query}` },
+        { id: '2', name: `2. ${input.body.query}` },
+      ],
+    },
+  };
+
+  return Promise.resolve(resp);
+}
+
 export function BuildClient(url: string): { path: Path } {
   const path: Path = (path, ...params) => {
     const service: ServicesLib = {
       '/api/v1/login': {
-        post: async function (
-          input: ILoginOptions
-        ): Promise<ILoginResponse | IErrorResponse> {
-          const innerFunction = async () => {
-            const data = JSON.stringify(input.body);
-            return await axios
-              .create({
-                baseURL: url,
-                timeout: TIMEOUT,
-                headers: {
-                  'Access-Control-Allow-Origin': '*',
-                  'Content-Type': 'application/json',
-                },
-              })
-              .post<{ token: string }>(path, data)
-              .then((data) => {
-                const resp: ILoginResponse = {
-                  status: '200',
-                  body: {
-                    token: data.data.token,
-                  },
-                };
-                return resp;
-              });
-          };
-
-          return await errorWrapper(innerFunction);
+        post: async function (input: ILoginOptions) {
+          return login(url, path, input);
         },
       },
       '/api/v1/devices': {
-        get: function (
-          input: IGetDevicesOptions
-        ): Promise<IErrorResponse | IGetDevicesResponse> {
-          if (!input.body.query) {
-            const resp: IGetDevicesResponse = {
-              status: '200',
-              body: {
-                devices: [
-                  { id: '1', name: '1' },
-                  { id: '2', name: '2' },
-                ],
-              },
-            };
-
-            return Promise.resolve(resp);
-          }
-
-          const resp: IGetDevicesResponse = {
-            status: '200',
-            body: {
-              devices: [
-                { id: '1', name: `1. ${input.body.query}` },
-                { id: '2', name: `2. ${input.body.query}` },
-              ],
-            },
-          };
-
-          return Promise.resolve(resp);
+        get: async function (input: IGetDevicesOptions) {
+          return list_devices(url, path, input);
         },
       },
     };
