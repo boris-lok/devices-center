@@ -8,10 +8,18 @@
   import { onDestroy, onMount } from "svelte";
   import InputBox from "./InputBox.svelte";
   import { servicesClient } from "../services/service";
+  import InfiniteScroll from "./InfiniteScroll.svelte";
 
   let subscription: Subscription;
   const searchBox = new BehaviorSubject("");
   let data = [];
+  let count = 20;
+  let fakeData = Array(20).map((x) => `${x}`);
+
+  function fetchData() {
+    fakeData = [...fakeData, ...Array(20).map((x) => `${x + count}`)];
+    count += 20;
+  }
 
   const onSearchBoxChanged = (e: InputEvent) => {
     searchBox.next((e.target as HTMLInputElement).value);
@@ -47,3 +55,12 @@
     <li>{id} - {name}</li>
   {/each}
 </ul>
+
+<div style="width:100px; height: 100px">
+  <div>
+    {#each fakeData as row}
+      <p>{row}</p>
+    {/each}
+  </div>
+  <InfiniteScroll hasMore={true} on:loadMore={fetchData} threshold={60} />
+</div>
